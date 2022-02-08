@@ -1,47 +1,12 @@
-#include "/public/read.h"
-//#include "/public/rtx_on/map"
-#include <iostream>
-#include <vector>
-using namespace std;
+#include <rectangle.h>
 
-class Rect{
-	double minx = 0, miny = 0, maxx = 0, maxy = 0;
-	vector<Rect> children;
-	public: 
-	Rect() {}
-	Rect(double new_minx, double new_miny, double new_maxx, double new_maxy) {
-		minx = new_minx;
-		miny = new_miny;
-		maxx = new_maxx;
-		maxy = new_maxy;
-	}
-	double get_minx() const {return minx;}
-	double get_miny() const {return miny;}
-	double get_maxx() const {return maxx;}
-	double get_maxy() const {return miny;}
-	void set_minx (double new_minx) {minx = new_minx;}
-	void set_miny (double new_miny) {miny = new_miny;}
-	void set_maxx (double new_maxx) {maxx = new_maxx;}
-	void set_maxy (double new_maxy) {maxy = new_maxy;}
-	void push_child (Rect const child) {
-		children.push_back(child);
-	}
-	friend ostream& operator<< (ostream& outs, Rect& rec) {
-		outs << "Rectangle :\n";
-		outs << "\tmin x: " << rec.minx << endl;
-		outs << "\tmin y: " << rec.miny << endl;
-		outs << "\tmax x: " << rec.maxx << endl;
-        outs << "\tmax y: " << rec.maxy << endl;
-		return outs;
-	}
-	friend istream& operator>> (istream& ins, Rect& rec) {
-		ins >> rec.minx >> rec.miny >> rec.maxx >> rec.maxy;
-		return ins;
-	}
-};
-
-int main() {
-	vector <Rect> vec;	
-	Rect rec;
-	return 0;
-}
+int Rectangle::get_x_min() const{return x_min;}
+int Rectangle::get_y_min() const{return y_min;}
+int Rectangle::get_x_max() const{return x_max;}
+int Rectangle::get_y_max() const{return y_max;}
+void Rectangle::set_x_min(int new_x_min) {x_min = new_x_min;}
+void Rectangle::set_y_min(int new_y_min) {y_min = new_y_min;}
+void Rectangle::set_x_max(int new_x_max) {x_max = new_x_max;}
+void Rectangle::set_y_max(int new_y_max) {y_max = new_y_max;}
+void Rectangle::push_children (int index) {vec.push_back(index);}
+//int Rectangle::get_child_index() {}
