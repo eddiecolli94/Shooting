@@ -13,12 +13,13 @@ Rectangle::Rectangle() {
 	y_max = 0;
 }
 Rectangle::Rectangle(int new_solid, double new_x_min, double new_y_min, double new_x_max, double new_y_max) {
-	if(new_solid != 0 or new_solid != 1) die(); //this line may need to be changed to allow for weird input
+	if(new_solid != 0 or new_solid != 1) die(); 
+	if(new_x_min > new_x_max or new_y_min > new_y_max) die();
 	solid = new_solid;
-	x_min = new_x_min;
-	y_min = new_x_min;
-	x_max = new_x_max;
-	y_max = new_x_max;
+	min.x = new_x_min;
+	min.y = new_y_min;
+	max.x = new_x_max;
+	max.y = new_x_max;
 }
 int Rectangle::get_solid() const{return solid;}
 double Rectangle::get_x_min() const{return x_min;}
@@ -30,5 +31,9 @@ void Rectangle::set_x_min(double new_x_min) {x_min = new_x_min;}
 void Rectangle::set_y_min(double new_y_min) {y_min = new_y_min;}
 void Rectangle::set_x_max(double new_x_max) {x_max = new_x_max;}
 void Rectangle::set_y_max(double new_y_max) {y_max = new_y_max;}
-void Rectangle::push_children (int index) {vec.push_back(index);}
-//int Rectangle::get_child_index() {}
+void Rectangle::push_children (int index) {
+	//solid rectangles cannot have children
+	if(solid) die(); 
+	vec.push_back(index);
+}
+vector<int> Rectangle::get_vec() {return vec;}
