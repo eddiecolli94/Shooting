@@ -1,0 +1,278 @@
+===============================
+ ____ _______  __   ___  _   _
+|  _ \_   _\ \/ /  / _ \| \ | |
+| |_) || |  \  /  | | | |  \| |
+|  _ < | |  /  \  | |_| | |\  |
+|_| \_\|_| /_/\_\  \___/|_| \_|
+
+===============================
+
+Background: NVIDIA RTX graphics hards have hardware support for a data
+structure called a Bounding Volume Hierarchy, or BVH for short. It is
+essentially just rectangles inside of rectangles... that's it. The bigger
+rectangles are used to quickly reject collisions and tracelines - if a line
+doesn't cross the big rectangle, then it can't intersect any of the rectangles
+inside it. If you're clever when building your BVHs, this allows you to
+quickly determine what rectangle is hit by what ray, and hence can do ray
+tracing in real time.
+
+We're not doing ray tracing graphics for this assignment, we're just going to
+build a BVH, and do a bunch of interesting things with it, such as validating
+that the map data is correct, and seeing which crates in a warehouse get shot
+the most.
+
+This is a greenfield assignment, meaning you're given no Makefile, and
+basically an empty main.cc. You are responsible for creating classes (using
+proper class design) for a Ray class, a Rectangle class, a Point class, and
+anything else you can think of, and splitting the project into different .h
+and .cc files, and using a Makefile you write to build the project.
+
+I have sample Makefiles in /public, and I also have some hints (mainly in the form of
+comments) in /public/rtx_on/hints.cc that might give you some ideas. But I
+recommend trying to do the project without the hints as much as possible.
+
+Once during the project, you can tell me "The Beacons are lit. Gondor
+calls for aid." and I'll give you a relevant code snippet that you can use in
+your project. Use this if you get stuck.
+
+There's a lot of easy point pickups from doing things like error checking and
+map validation, so even if you don't think you are going to be able to finish
+the project, you should at least start the project and get as many points as
+you can. You might find it gets easier once you get into the groove.
+
+As always, don't wait to the last minute to start the project. Start early so
+you can ask for help early.
+
+==============
+
+The Map Format
+
+==============
+
+The map file holds a bunch of rectangles. Some of the rectangles are solid, and you
+can think of them like crates in a warehouse. They can be enclosed by a
+non-solid rectangle, and those rectangles are just there to make the
+intersection testing and such go faster. If a line doesn't cross a non-solid
+rectangle, then it cannot hit any rectangle inside it. Nice!
+
+The format is:
+Solid(1)/Nonsolid(0) x_min y_min x_max y_max (list of children iff not solid)
+
+The list of children are line numbers (the lines start at 0) of solid
+rectangles inside the non-solid rectangle. Solid rectangles do not have
+children. All non-solid rectangles must have children.
+
+Here's a sample file:
+0 0 0 100 100 1 2 
+1 1.1 1.0 1.2 1.3
+1 10 10 11 11
+0 50 60 70 80 4
+0 55 65 65 75 5
+1 56 66 64 74
+
+The first line (line 0) is a non-solid rectangle with two children (the next
+two rows, lines 1 and 2). The first rectangle ranges from (0,0) to (100,100).
+The children of it are both small solid rectangles, the first is only .1 x .3,
+ranging from (1.1,1.0) to (1.2,1.3) and the second is only 1 x 1, ranging from
+(10,10) to (11,11).
+
+The fourth line (line 3) is a second non-solid rectangle. This one contains
+only a single non-solid rectangle, and that one contains a single solid
+rectangle.
+
+Possible errors:
+1) A non-solid rectangle has no children (having a non-solid child is ok)
+2) A minimum value is >= the maximum value (so if the minimum x is 10, the
+maximum x can't be 9, etc.)
+3) A child of a rectangle sticks out from the parent rectangle (all children
+must be completely enclosed by the parent)
+
+==========
+
+Shots File 
+
+==========
+
+The shots file holds a list of shots (imagine some hitscan weapon in a video
+game like a shotgun or something). Each shot has an origin and a direction.
+The origin is an (x,y) coordinate, like (5,3).
+The direction is a slope and whether the shot is traveling along that slope or
+in the reverse. A slope of "Vertical" means that the shot is travelling
+straight up and down.
+
+The format is:
+x_location y_location slope(either a number like 2.1 or a non-number meaning
+"Vertical") forwards(1 meaning forwards, 0 meaning backwards)
+
+0 0 0 0
+0 0 0 1
+0 0 Vertical 0
+0 0 Squirrel 1
+10 10 -1 1
+-10.1 -100.01 2.1 0
+
+The first line is a horizontal line shooting left from the origin (0,0).
+The second line is a shot also travelling horizontally from the origin, but
+forward along the x axis instead of backwards.
+The third line is shooting straight down out of the origin
+The fourth line is shooting straight up out of the origin (any non-number
+means Vertical, not just Vertical)
+The fifth line is travelling diagonally down and to the right out of (10,10)
+The sixth line is travelling steeply (slope: 2.1) down and to the left out of
+(-10.1,-100.01)
+
+Things to watch out for: make sure you can handle negative slopes as well as
+non-numbers (like "vertical" or "squirrel" or "-") which all mean the shot is
+vertical.
+
+==================
+
+Menu of Operations
+
+==================
+
+You start off by printing an RTX banner with figlet, and then load a map file
+and a shots file. If there's any errors in those files (like a min value being
+>= a max value) quit immediately.
+
+Then print this:
+
+1) Print the world of boxes
+2) Print the list of shots
+3) Check the boxes for correctness
+4) See if two rectangles overlap
+5) See if a ray hits a rectangle
+6) Output a list of all solid boxes colliding
+7) Fire all shots and see which box is getting hit the most
+Please enter choice:
+
+You must implement each of the 7 operations, but if you don't want to do all
+of them and are fine with not a 100%, then I'd implement them in order, as I
+sort of ordered them by difficulty.
+
+Each operation runs once and then quits. While inconvenient, it makes it
+easier for you to pick up more points in test cases.
+
+=== Operation 1 - Print the map data ===
+
+For the sample map above, it would look like this:
+
+(0.00,0.00) to (100.00,100.00) NOT SOLID Children: 1 2
+(1.10,1.00) to (1.20,1.30) SOLID
+(10.00,10.00) to (11.00,11.00) SOLID
+(50.00,60.00) to (70.00,80.00) NOT SOLID Children: 4
+(55.00,65.00) to (65.00,75.00) NOT SOLID Children: 5
+(56.00,66.00) to (64.00,74.00) SOLID
+
+(NOTE THAT ALL NUMBERS ARE ROUNDED TO EXACTLY TWO DECIMAL PLACES ALWAYS)
+
+=== Operation 2 - Print the shot data ===
+
+For the sample shots file given above, it would print out this:
+
+(0.00,0.00) Slope: 0.00 Backwards
+(0.00,0.00) Slope: 0.00 Forwards
+(0.00,0.00) Slope: Vertical Backwards
+(0.00,0.00) Slope: Vertical Forwards
+(10.00,10.00) Slope: -1.00 Forwards
+(-10.10,-100.01) Slope: 2.10 Backwards
+
+=== Operation 3 - Map Check ===
+
+It's fairly common to have files containing data, and for programs who load
+the data to not do a lot of checking at load time for speed reasons. But they
+still need to be checked to make sure they don't contain errors, so maybe the
+map making tool or a separate mapcheck tool might exist to look for errors. In
+this case, it is going to look for any rectangles that extend out of their
+parent rectangle. 
+
+For example, if you had this file
+0 10 10 20 20 1 
+1 15 15 25 25
+
+This would have a parent rectangle from (10,10) going to (20,20) but it's
+child goes from (15,15) to (25,25), meaning it is not enclosed by the parent
+rectangle. This defeats the whole point of a BVH, which is to make
+intersection tests with large numbers of rectangles fast by enclosing them in
+a rectangle. If any stick out, then it just doesn't work.
+
+Your code should print:
+Map Correct
+if the map is correct, or
+Map Error: Box 1
+if the map has an error. Quit on the first child rectangle that sticks out
+from a parent. The box number is its line in the file (lines start at 0).
+
+=== Operation 4 - Rectangle/Rectangle Intersection ===
+
+This operation doesn't use the maps file. You just manually enter two
+rectangles and it tells you if they intersect or not. It's designed to let you
+test your algorithm to see if two rectangles intersect.
+
+Example:
+Please enter the min and max points for a Rectangle (example: 0 0 10 20 to make a box from (0,0) to (10,20)):
+0 0 10 10
+And then again for a second Rectangle:
+9.9 9.9 10.1 10.1
+They intersect!
+
+Example 2:
+Please enter the min and max points for a Rectangle (example: 0 0 10 20 to make a box from (0,0) to (10,20)):
+-10 -10 -5 -5
+And then again for a second Rectangle:
+-4 -4 10 10
+They don't intersect
+
+=== Operation 5 - Ray/Rectangle Intersection === 
+
+This is similar to #4 except you're testing to see if a Ray hits a Rectangle.
+
+Example:
+Please enter the min and max points for a Rectangle (example: 0 0 10 20 to make a box from (0,0) to (10,20)):
+5 1 6 100
+Please enter a shot (for example: 0 5 1.1 1 means it comes from (0 5) heading up at a slope of 1.1 in the forwards direction):
+0 3 5 1
+HIT! Location: (5.00,28.00)
+
+Example 2:
+Please enter the min and max points for a Rectangle (example: 0 0 10 20 to make a box from (0,0) to (10,20)):
+-10 -10 -5 -5
+Please enter a shot (for example: 0 5 1.1 1 means it comes from (0 5) heading up at a slope of 1.1 in the forwards direction):
+-4 -9 2.1 1
+MISS!
+
+=== Operation 6 - Collision Detection ===
+
+This one is just Operation 4, but across the whole map. For all solid
+rectangles on the map, you output all the other solid rectangles it is
+touching, if their row number is higher.
+
+Example Map File:
+0 0 0 100 100 1 2 3 4 5
+1 1 1 2 2
+1 10 10 11 11
+1 1 30 31 60
+1 90 0 100 10
+1 -100 -100 100 100
+1 99 99 101 101
+
+Example Output:
+Box 1 and Box 5 intersect.
+Box 2 and Box 5 intersect.
+Box 3 and Box 5 intersect.
+Box 4 and Box 5 intersect.
+Box 5 and Box 6 intersect.
+
+If there are no intersections it just quits and prints nothing.
+
+=== Operation 7 - Shots Fired ===
+
+This one is just Operation 5, but across the whole map. For all shots in the
+shots file you see which box got hit in the maps file. The box that got hit
+the most you print:
+
+Box 3 got hit the most
+
+And quit.
+
+That's it! Good luck! Have fun!
