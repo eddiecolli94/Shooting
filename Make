@@ -1,0 +1,14 @@
+a.out: main.o Rectangle.o Shot.o 
+  g++ main.o Rectangle.o Shot.o 
+  
+main.o: main.cc Rectangle.h
+  g++ -c main.cc
+
+Rectangle.o: Rectangle.cc Rectangle.h Shot.h 
+  g++ -c Rectangle.cc
+  
+  Shot.o: Shot.h Shot.cc
+  g++ -c Shot.cc
+  
+clean: 
+rm -f *.0 core a.out 
