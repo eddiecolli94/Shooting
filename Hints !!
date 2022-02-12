@@ -1,0 +1,117 @@
+#include "/public/read.h"
+#include <sstream>
+#include <iomanip>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+using namespace std;
+
+void die(string s = "BAD INPUT!") {
+    cout << s << endl;
+    exit(EXIT_FAILURE);
+}
+
+//YOU: Do all the classes and functions other than main
+struct Point {
+};
+
+//INVARIANT #1: min must always be < max (in both x and y)
+//INVARIANT #2: solid rectangles cannot have children, non-solid must have children, solid & children can't change over time
+class Rectangle {
+};
+
+//Function that loads Rectangles from the given filename and returns them in a vector
+//File format: One rectangle per line
+//Line Format: solid min max children
+//Example: 1 3 3 10 20 (this means solid, min_x = 3, min_y = 3, max_x = 10, max_y = 20, no children)
+//Example: 0 3 3 10 20 111 112 113 (means not solid, min_x = 3, min_y = 3, max_x = 10, max_y = 20, rectangles 111, 112 an 113 are children)
+//The numbers of the children are their line number, starting at 0
+vector<Rectangle> load_map(const string &s) {
+}
+
+//A ray has two components, a starting location and a direction (held here as a slope)
+class Ray {
+};
+
+//File format: a series of lines, each line containing a location and a slope (a double OR the string "Vertical") and then a bool that indicates if the shot is forwards (1) or backwards (0).
+//Example: 5.1 -16.3 2.1 1 (means x location of 5.1, y location of 16.3, and slope of 2.1, and the shot moves in the direction of the slope)
+//Example: 10 0 Vertical 0 (means the shot comes from x = 10, y = 0, is going down vertically)
+//Example: 0 0 0 0 (means the shot comes out horizontally to the left from the origin)
+vector<Ray> load_shots(const string &s) {
+}
+//Check for non nested rectangles - non-solid rectangles must have >= 1 solid inside it, and they must be entirely inside of it, not sticking out
+//Prints either "Map Correct" or "Map Error: Box 3" or whatever box is bad
+void check_correctness(const vector<Rectangle> &boxes) {
+}
+
+//Enter a rectangle and a ray and print the point if it hits or "MISS!" if it misses
+void take_shot() {
+}
+
+void take_all_shots(const vector<Rectangle> &boxes, const vector<Ray> &shots) {
+}
+
+//Teach C++ how to cout a vector
+template <class T>
+ostream& operator<<(ostream &outs, const vector<T> &vec) {
+    for (const auto &a : vec) outs << a << endl;
+    return outs;
+}
+
+//Read in two rectangles and see if they overlap
+void overlap_check() {
+}
+
+void overlap_all(const vector<Rectangle> &boxes) {
+}
+
+
+int main() {
+    //The (void)! is just there to ignore the return value of system, which otherwise will warn
+    //Or we could do #pragma GCC diagnostic ignored "-Wunused-result"
+    // but that would only work for GCC
+    (void)!system("/usr/bin/figlet RTX ON");
+    string filename1 = read("Please enter the map filename:\n");
+    vector<Rectangle> boxes = load_map(filename1);
+    if (!boxes.size()) die("Empty File!");
+    string filename2 = read("Please enter filename with the shots:\n");
+    vector<Ray> shots = load_shots(filename2);
+    if (!shots.size()) die("Empty File!");
+    cout << "Menu:\n" <<
+        "1) Print the world of boxes\n" <<
+        "2) Print the list of shots\n" <<
+ "3) Check the boxes for correctness\n" <<
+        "4) See if two rectangles overlap\n" <<
+        "5) See if a ray hits a rectangle\n" <<
+        "6) Output a list of all solid boxes colliding\n" <<
+        "7) Fire all shots and see which box is getting hit the most\n";
+
+    //Let's do a switch with an enum because why not the kids love it
+    enum CHOICES {PRINT_BOXES=1, PRINT_SHOTS, CHECK_CORRECTNESS, OVERLAP_CHECK, TAKE_SHOT, OVERLAP_ALL, TAKE_ALL_SHOTS};
+    const int choice = read("Please enter choice:\n");
+    switch (choice) {
+        case PRINT_BOXES:
+            cout << boxes; //Print a vector!
+            break;
+        case PRINT_SHOTS:
+            cout << shots; //Print a vector!
+            break;
+        case CHECK_CORRECTNESS:
+            check_correctness(boxes);
+            break;
+        case OVERLAP_CHECK:
+            overlap_check();
+            break;
+        case TAKE_SHOT:
+            take_shot();
+            break;
+        case OVERLAP_ALL:
+            overlap_all(boxes);
+            break;
+        case TAKE_ALL_SHOTS:
+            take_all_shots(boxes,shots);
+            break;
+        default:
+            die("Unknown choice");
+    }
+}
