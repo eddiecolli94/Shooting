@@ -17,7 +17,7 @@ void die(string s = "BAD INPUT!") {
 vector<Rectangle> load_map(const string &s) {
 	int is_solid = 0;
 	double min_x_value = 0, min_y_value = 0, max_x_value = 0, max_y_value = 0;
-	vector<int> children;
+	vector<int> kids;
 	vector<Rectangle> map;
 	ifstream ins(s);
 	while(ins) {
@@ -29,11 +29,13 @@ vector<Rectangle> load_map(const string &s) {
 			if(!iss) break;
 			int child_index = 0;
 			iss >> child_index;
-			children.push_back(child_index);
+			kids.push_back(child_index);
 		}
-		children.pop_back();
+		kids.pop_back();
 		Rectangle Rect(is_solid, min_x_value, min_y_value, max_x_value, max_y_value);
+		for(int i : kids) Rect.push_children(i);
 		map.push_back(Rect);
+		kids.clear();
 	}
 	return map;
 }
@@ -84,22 +86,26 @@ int main() {
 	const int choice = read("Please enter choice:\n");
 	switch (choice) {
 			case PRINT_BOXES:
+					cout << fixed;
+					cout.precision(2);
 					cout << boxes; //Print a vector!
 					break;
 			case PRINT_SHOTS:
-				cout << shots; //Print a vector!
+					cout << fixed;
+					cout.precision(2);
+					cout << shots; //Print a vector!
 					break;
 			case CHECK_CORRECTNESS:
 //					check_correctness(boxes);
 					break;
 			case OVERLAP_CHECK:
-//					overlap_check();
+					overlap_check();
 					break;
 			case TAKE_SHOT:
 //					take_shot();
 					break;
 			case OVERLAP_ALL:
-//					overlap_all(boxes);
+					overlap_all(boxes);
 					break;
 			case TAKE_ALL_SHOTS:
 //					take_all_shots(boxes,shots);
