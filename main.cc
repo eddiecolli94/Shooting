@@ -2,6 +2,10 @@
 #include "ray.h"
 #include <vector>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <cmath>
+#include <algorithm>
 using namespace std;
 
 //GL; HF
@@ -11,24 +15,43 @@ void die(string s = "BAD INPUT!") {
 }
 
 vector<Rectangle> load_map(const string &s) {
-	ifstream file (s);
-	string input;
+	int is_solid = 0;
+	double min_x_value = 0, min_y_value = 0, max_x_value = 0, max_y_value = 0;
+	vector<int> children;
 	vector<Rectangle> map;
-	while(file) {
-		int is_solid = 0;
-		double min_x_val = 0;
-		double min_y_val = 0;
-		double max_x_val = 0;
-		double max_y_val = 0;
-		Rectangle temp(is_solid, min_x_val, min_y_val, max_x_val, max_y_val);
-		map.push_back(temp);
+	ifstream ins(s);
+	while(ins) {
+		string input = readline(ins);
+		stringstream iss(input);
+		iss >> is_solid >> min_x_value >> min_y_value >> max_x_value >> max_y_value;
+		if(!iss) break;
+		while(iss) {
+			if(!iss) break;
+			int child_index = 0;
+			iss >> child_index;
+			children.push_back(child_index);
+		}
+		children.pop_back();
+		Rectangle Rect(is_solid, min_x_value, min_y_value, max_x_value, max_y_value);
+		map.push_back(Rect);
 	}
 	return map;
 }
 
 vector<Ray> load_shots(const string &s) {
-	vector<Ray> shots;
-	return shots;
+	double x_val = 0, y_val = 0;
+	string slope_val;
+	int direc = 0;
+	vector<Ray> shot;
+	ifstream ins(s);
+	while(ins) {
+		string input = readline(ins);
+		stringstream iss(input);
+		iss >> x_val >> y_val >> slope_val >> direc;
+		Ray bullet(x_val, y_val, slope_val, direc);
+		shot.push_back(bullet);
+	}
+	return shot;
 }
 template <class T>
 ostream& operator<<(ostream &outs, const vector<T> &vec) {
@@ -44,9 +67,9 @@ int main() {
 	string filename1 = read("Please enter the map filename:\n");
 	vector<Rectangle> boxes = load_map(filename1);
 	if (!boxes.size()) die("Empty File!");
-//	string filename2 = read("Please enter filename with the shots:\n");
-//	vector<Ray> shots = load_shots(filename2);
-//	if (!shots.size()) die("Empty File!");
+	string filename2 = read("Please enter filename with the shots:\n");
+	vector<Ray> shots = load_shots(filename2);
+	if (!shots.size()) die("Empty File!");
 	cout << "Menu:\n" <<
 			"1) Print the world of boxes\n" <<
 			"2) Print the list of shots\n" <<
@@ -64,7 +87,7 @@ int main() {
 					cout << boxes; //Print a vector!
 					break;
 			case PRINT_SHOTS:
-	//				cout << shots; //Print a vector!
+				cout << shots; //Print a vector!
 					break;
 			case CHECK_CORRECTNESS:
 //					check_correctness(boxes);

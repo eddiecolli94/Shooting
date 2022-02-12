@@ -6,10 +6,8 @@ Rectangle::Rectangle() {
 	min.y = 0;
 	max.x = 0;
 	max.y = 0;
-	child_ptr = nullptr;
 }
 Rectangle::Rectangle(int new_solid, double new_x_min, double new_y_min, double new_x_max, double new_y_max) {
-	if(new_solid != 0 or new_solid != 1) exit(-1); 
 	if(new_x_min > new_x_max or new_y_min > new_y_max) exit(-1);
 	solid = new_solid;
 	min.x = new_x_min;
@@ -31,17 +29,35 @@ void Rectangle::push_children (int index) {
 	//solid rectangles cannot have children
 	if(solid) exit(-1); 
 	children.push_back(index);
-	if(children.size() == 1) child_ptr = &children;
 }
 ostream& operator<<(ostream &outs, const Rectangle &rec) {
-	outs << rec.solid; 
-	outs << rec.get_x_min();
-	outs << rec.get_y_min();
-	outs << rec.get_x_max();
-	outs << rec.get_y_max();
+	outs << rec.solid << " " << rec.get_x_min() << " " << rec.get_y_min() << " " << rec.get_x_max() << " " << rec.get_y_max();
 	return outs;
 }
-vector<int> Rectangle::get_vec_ptr() const {return *child_ptr;}
-void Rectangle::overlap_check() {}
-void Rectangle::overlap_all(const vector<Rectangle> &boxes) {}
-void Rectangle::check_correctness(const vector<Rectangle> &boxes) {}
+void overlap_all(const vector<Rectangle> &boxes) {
+    vector<Rectangle> map = boxes;
+    bool check = true;
+    for(int i = 0; i < map.size()-1; i++) {
+        for(int j = i; j < map.size(); j++) {
+            if ((map.at(i).get_x_min() < map.at(j).get_x_max()) and (map.at(i).get_x_max() > map.at(j).get_x_min()) and (map.at(i).get_y_max() < map.at(j).get_y_min()) and (map.at(i).get_y_min() > map.at(j).get_y_max())){
+                cout << "Map Error: Box " << j << endl;
+            }
+        }
+    }
+    cout << "Map Correct" << endl;
+}
+void check_correctness(const vector<Rectangle> &boxes) {
+	for(int i = 0; i < boxes.size(); i++) {
+		for(int i = 0; i < boxes.size()-1; i++) {
+        for(int j = i; j < boxes.size(); j++) {
+            if ((boxes.at(i).get_x_min() < boxes.at(j).get_x_max()) and (boxes.at(i).get_x_max() > boxes.at(j).get_x_min()) and (boxes.at(i).get_y_max() < boxes.at(j).get_y_min()) and (boxes.at(i).get_y_min() > boxes.at(j).get_y_max())){
+                cout << "Map Error: Box " << j << endl;
+                exit(-1);
+            }
+        }
+    }
+    cout << "Map Correct" << endl;
+
+	}
+}
+
