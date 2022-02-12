@@ -18,4 +18,17 @@ class Rectangle{
 		void set_y_max(int new_y_max);
 		void push_children(int index);
 		//int get_child_index();
+	
+	        bool FindPoint(int x_min, int y_min, int x_max, int y_max, int x, int y){
+			
+		  if (x > x_min and x < x_max and y > y_min and y < y_max) //return true if (x,y) are in our rectangle 
+                          return true;
+                   else 
+                          return false; 
+		                         }
+                                      
+		
+         
+
+	
 }
