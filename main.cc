@@ -42,15 +42,24 @@ vector<Rectangle> load_map(const string &s) {
 
 vector<Ray> load_shots(const string &s) {
 	double x_val = 0, y_val = 0;
-	string slope_val;
+	string temp = "";
+	double slope_val = 0;
 	int direc = 0;
 	vector<Ray> shot;
 	ifstream ins(s);
 	while(ins) {
 		string input = readline(ins);
 		stringstream iss(input);
-		iss >> x_val >> y_val >> slope_val >> direc;
+		iss >> x_val >> y_val >> temp >> direc;
+		if(!iss) break;
+		if(isdigit(temp.at(0))) slope_val = stod(temp);
+		else if (temp.size() > 1 and temp.at(0) == '-' and isdigit(temp.at(1))) slope_val = stod(temp);
+		else {
+			temp = "Vertical";
+		}
 		Ray bullet(x_val, y_val, slope_val, direc);
+		if(temp != "")bullet.set_vertical(temp);
+		else temp.clear();
 		shot.push_back(bullet);
 	}
 	return shot;
@@ -68,10 +77,10 @@ int main() {
 	(void)!system("/usr/bin/figlet RTX ON");
 	string filename1 = read("Please enter the map filename:\n");
 	vector<Rectangle> boxes = load_map(filename1);
-	if (!boxes.size()) die("Empty File!");
+	if (!boxes.size()) die("Could not open file");
 	string filename2 = read("Please enter filename with the shots:\n");
 	vector<Ray> shots = load_shots(filename2);
-	if (!shots.size()) die("Empty File!");
+	if (!shots.size()) die("Could not open file");
 	cout << "Menu:\n" <<
 			"1) Print the world of boxes\n" <<
 			"2) Print the list of shots\n" <<
@@ -96,7 +105,7 @@ int main() {
 					cout << shots; //Print a vector!
 					break;
 			case CHECK_CORRECTNESS:
-//					check_correctness(boxes);
+					check_correctness(boxes);
 					break;
 			case OVERLAP_CHECK:
 					overlap_check();

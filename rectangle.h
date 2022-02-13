@@ -32,6 +32,8 @@ class Rectangle{
 		void set_x_max(double new_x_max);
 		void set_y_max(double new_y_max);
 		void push_children(int index);
+		int get_child_index_at(int index) const;
+		size_t get_child_size() const;
 		friend ostream& operator<<(ostream &outs, const Rectangle &rec);
 };
 void overlap_all(const vector<Rectangle> &boxes);
