@@ -31,6 +31,7 @@ void Ray::set_direction(int new_direction) {
 double Ray::get_x_loc() const {return loc.x;}
 double Ray::get_y_loc() const {return loc.y;}
 double Ray::get_slope() const {return slope;}
+string Ray::get_vert() const {return vertical;}
 ostream& operator<<(ostream &outs, const Ray &shot) {
 	outs << "(" << shot.loc.x << "," << shot.loc.y << ") Slope: ";
 	if(shot.vertical == "Vertical") outs << "Vertical";

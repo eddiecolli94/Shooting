@@ -79,9 +79,6 @@ ostream& operator<<(ostream &outs, const vector<T> &vec) {
 
 
 void take_shot(){
-	string win = "HIT! Location: ";
-	string lose = "MISS!";
-	Ray win_loc;
 	bool hit = false;
 	string str;
 	double x_val = 0;
@@ -111,51 +108,240 @@ void take_shot(){
 		cout << "HIT! Location: (" << x_val << "," << y_val << ")" << endl;
 		exit(0);
 	}
-	//set shot to the origin and move rectangle accordingly
-	double x_diff = 0 - x_val;
-	double y_diff = 0 - y_val;
-	rec.set_x_min(a - x_diff);
-	rec.set_y_min(a - y_diff);
-	rec.set_x_max(a - x_diff);
-	rec.set_y_max(a - y_diff);
-	if(direction == 0) direction = -1;
-	slope = slope * direction;
-	double pt_direction = 0; //this will be used to check if vertical shots are going in the right direction or missing entirely
+	
 
-	if(bullet.get_vert() == "Vertical") {
-		if(x_val > rec.get_x_min() and x_val < rec.get_x_max()) {
-			pt_direction = rec.get_y_min() - y_val;
-			if(pt_direction > 0 and direction > 0) {
-				cout << fixed;
-				cout.precision(2);
-				cout << "HIT! Location: (" << x_val << "," << rec.get_y_min() << ")" << endl;
-				exit(0);
+	const double min_x = rec.get_x_min() - bullet.get_x_loc();
+    const double min_y = rec.get_y_min() - bullet.get_y_loc();
+    const double max_x = rec.get_x_max() - bullet.get_x_loc();
+    const double max_y = rec.get_y_max() - bullet.get_y_loc();
+	if (direction == 1 and slope >= 0) { //Quadrant one - check left and bottom edges
+        //If the normalized top right corner is off the edge, it's a miss
+        if (max_x < 0 or max_y < 0) {
+			cout << "MISS!" << endl;
+			exit(0);
+		}
+
+        //Check left edge
+        const double y = min_x * slope;
+        if (min_y <= y and y <= max_y) {
+			cout << fixed;
+			cout.precision(2);
+			cout << "HIT! Location: (" << rec.get_x_min() << "," << y+bullet.get_y_loc() << ")" << endl;
+			exit(0);
+		}
+        //Check bottom edge - be careful for division by 0
+        const double x = min_y / slope;
+        if (min_x <= x and x <= max_x) {
+			cout << fixed;
+			cout.precision(2);
+			cout << "HIT! Location: (" << bullet.get_x_loc() + x << "," << bullet.get_y_loc() << ")" << endl;
+			exit(0);
+		}
+    }
+	else if (direction == 0 and slope <= 0) { //Quadrant two - check left and bottom edges
+        //If the normalized top right corner is off the edge, it's a miss
+        if (max_x > 0 or min_y < 0) {
+			cout << "MISS!" << endl;
+			exit(0);
+		}
+
+        //Check right edge
+        const double y = min_x * slope;
+        if (min_y <= y and y <= max_y) {
+			cout << fixed;
+			cout.precision(2);
+			cout << "HIT! Location: (" << y+bullet.get_y_loc() << "," << rec.get_x_min() << ")" << endl;
+			//cout << "HIT! Location: (" << rec.get_x_min() << "," << y+bullet.get_y_loc() << ")" << endl;
+			exit(0);
+		}
+
+        //Check bottom edge - be careful for division by 0
+        const double x = min_y / slope;
+        if (min_x <= x and x <= max_x) {
+			cout << fixed;
+			cout.precision(2);
+			cout << "HIT! Location: (" << bullet.get_x_loc() + x << "," << rec.get_y_min() << ")" << endl;
+			exit(0);
+		}
+    }
+	else if (direction == 0 and slope >= 0) { //Quadrant three - check left and bottom edges
+        //If the normalized top right corner is off the edge, it's a miss
+        if (min_x > 0 or min_y > 0) {
+			cout << "MISS!" << endl;
+			exit(0);
+		}
+
+        //Check left edge
+        const double y = max_x * slope;
+        if (max_y >= y and y >= min_y) {
+			cout << fixed;
+			cout.precision(2);
+			cout << "HIT! Location: (" << max_x + bullet.get_x_loc() << "," << y + bullet.get_y_loc() << ")" << endl;
+			exit(0);
+		}
+
+        //Check bottom edge - be careful for division by 0
+        const double x = min_y / slope;
+        if (min_x >= x and x <= max_x) {
+			cout << fixed;
+			cout.precision(2);
+			cout << "HIT! Location: (" << bullet.get_x_loc() + x << "," << rec.get_y_min() << ")" << endl;
+			exit(0);
+		}
+    }
+	else if (direction == 1 and slope <= 0) { //Quadrant four - check left and bottom edges
+        //If the normalized top right corner is off the edge, it's a miss
+        if (max_x < 0 or min_y > 0) {
+			cout << "MISS!" << endl;
+			exit(0);
+		}
+
+        //Check left edge
+        const double y = min_x * slope;
+        if (min_y <= y and y <= max_y) {
+			cout << fixed;
+			cout.precision(2);
+			cout << "HIT! Location: (" << rec.get_x_min() << "," << y+bullet.get_y_loc() << ")" << endl;
+			exit(0);
+		}
+
+        //Check bottom edge - be careful for division by 0
+        const double x = min_y / slope;
+        if (min_x <= x and x <= max_x) {
+			cout << fixed;
+			cout.precision(2);
+			cout << "HIT! Location: (" << bullet.get_x_loc() + x << "," << rec.get_y_min() << ")" << endl;
+			exit(0);
+		}
+    }
+}
+
+void take_all_shots(const vector<Rectangle> &boxes, const vector<Ray> &shots) {
+	//if the point is inside the rectangle
+	vector<int> box_hit_counter(boxes.size(),0);
+	for(size_t i = 0; i < shots.size(); i++) {
+		bool is_hit = false;
+		for(size_t j = 0; j < boxes.size(); j++) {
+			if(boxes.at(j).get_solid() == 0) continue;
+			if(FindPoint(boxes.at(j).get_x_min(), boxes.at(j).get_y_min(), boxes.at(j).get_x_max(), boxes.at(j).get_y_max(), shots.at(i).get_x_loc(), shots.at(i).get_y_loc())) {
+				box_hit_counter.at(j)++;
+				continue;
 			}
-			else if(pt_direction < 0 and direction < 0) {
-				cout << fixed;
-				cout.precision(2);
-				cout << "HIT! Location: (" << x_val << "," << rec.get_y_max() << ")" << endl;
-				exit(0);
+			//check if HORIZONTAL here
+			if(false) {}
+			//check if VERTICAL here
+			else if(false) {}
+	
+			const double min_x = boxes.at(j).get_x_min() - shots.at(i).get_x_loc();
+			const double min_y = boxes.at(j).get_y_min() - shots.at(i).get_y_loc();
+			const double max_x = boxes.at(j).get_x_max() - shots.at(i).get_x_loc();
+			const double max_y = boxes.at(j).get_y_max() - shots.at(i).get_y_loc();
+			if (shots.at(i).get_direction() == 1 and shots.at(i).get_slope() >= 0) { //Quadrant one - check left and bottom edges
+				//If the normalized top right corner is off the edge, it's a miss
+				if (max_x < 0 or max_y < 0) {
+					continue;
+				}
+
+				//Check left edge
+				const double y = min_x * shots.at(i).get_slope();
+				if ((min_y <= y and y <= max_y) and !is_hit) {
+					box_hit_counter.at(j)++;
+					bool is_hit = true;
+					continue;
+				}
+				//Check bottom edge - be careful for division by 0
+				const double x = min_y / shots.at(i).get_slope();
+				if ((min_x <= x and x <= max_x) and !is_hit) {
+					box_hit_counter.at(j)++;
+					bool is_hit = true;
+					continue;
+				}
 			}
-			else {
-				cout << "MISS!" << endl;
-				exit(0);
+			else if (shots.at(i).get_direction() == 0 and shots.at(i).get_slope() <= 0) { //Quadrant two - check left and bottom edges
+				//If the normalized bottom right corner is off the edge, it's a miss
+				if (max_x > 0 or min_y < 0) {
+					continue;
+				}
+
+				//Check right edge
+				const double y = max_x * shots.at(i).get_slope();
+				if ((min_y <= y and y <= max_y) and !is_hit) {
+					box_hit_counter.at(j)++;
+					bool is_hit = true;
+					continue;
+				}
+
+				//Check bottom edge - be careful for division by 0
+				const double x = min_y / shots.at(i).get_slope();
+				if ((min_x <= x and x <= max_x) and !is_hit) {
+					box_hit_counter.at(j)++;
+					bool is_hit = true;
+					continue;
+				}
+			}
+			else if (shots.at(i).get_direction() == 0 and shots.at(i).get_slope() >= 0) { //Quadrant three - check left and bottom edges
+				//If the normalized top right corner is off the edge, it's a miss
+				if (max_x > 0 or min_y > 0) {
+					continue;
+				}
+
+				//Check right edge
+				const double y = max_x * shots.at(i).get_slope();
+				if ((max_y >= y and y >= min_y) and !is_hit) {
+					box_hit_counter.at(j)++;
+					bool is_hit = true;
+					continue;
+				}
+
+				//Check top edge - be careful for division by 0
+				const double x = max_y / shots.at(i).get_slope();
+				if ((min_x >= x and x <= max_x) and !is_hit) {
+					box_hit_counter.at(j)++;
+					bool is_hit = true;
+					continue;
+				}
+			}
+			else if (shots.at(i).get_direction() == 1 and shots.at(i).get_slope() <= 0) { //Quadrant four - check left and bottom edges
+				//If the normalized top left corner is off the edge, it's a miss
+				if (min_x < 0 or max_y > 0) {
+					continue;
+				}
+
+				//Check left edge
+				const double y = min_x * shots.at(i).get_slope();
+				if ((min_y <= y and y <= max_y) and !is_hit) {
+					box_hit_counter.at(j)++;
+					bool is_hit = true;
+					continue;
+				}
+
+				//Check top edge - be careful for division by 0
+				const double x = max_y / shots.at(i).get_slope();
+				if ((min_x <= x and x <= max_x) and !is_hit) {
+					box_hit_counter.at(j)++;
+					bool is_hit = true;
+					continue;
+				}
 			}
 		}
 	}
-
-	double coll_y = rec.get_x_min() * slope;
-	if(coll_y >= rec.get_y_min() and coll_y <= rec.get_x_max()) hit = true;
-	
-
-	if(hit){
-		cout << fixed;
-		cout.precision(2);
-		cout << win  << "(" << rec.get_x_min() - x_diff << "," << coll_y - y_diff << ")" <<endl;
-	}else{
-		cout << lose << endl;
+	int most_hit_index = 0;
+	int most_hits = 0;
+	for(size_t i = 0; i < box_hit_counter.size(); i++) { 
+		if(box_hit_counter.at(i) > most_hits) {
+			most_hits = box_hit_counter.at(i);
+			most_hit_index = i;
+		}
 	}
+	cout << "Box " << most_hit_index << " was hit " << most_hits << " times" << endl;
 
+	
+	// code for checking boxes hit data if you need it
+/*
+	for(size_t i = 0; i < box_hit_counter.size(); i++) { 
+		cout << "Box " << i << " was hit " << box_hit_counter.at(i) << " times" << endl;
+	}
+	*/
 }
 
 
@@ -203,10 +389,10 @@ int main() {
 					take_shot();
 					break;
 			case OVERLAP_ALL:
-//					overlap_all(boxes);
+					overlap_all(boxes);
 					break;
 			case TAKE_ALL_SHOTS:
-//					take_all_shots(boxes,shots);
+					take_all_shots(boxes,shots);
 					break;
 			default:
 					die("Unknown choice");

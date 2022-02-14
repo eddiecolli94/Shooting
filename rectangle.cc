@@ -49,16 +49,56 @@ ostream& operator<<(ostream &outs, const Rectangle &rec) {
 }
 
 void overlap_all(const vector<Rectangle> &boxes) {
-	bool check = true;
-    vector<Rectangle> map = boxes;
-    for(int i = 0; i < map.size()-1; i++) {
-        for(int j = i+1; j < map.size(); j++) {
-			if ((map.at(i).get_x_min() > map.at(j).get_x_max()) or (map.at(i).get_x_max() > map.at(j).get_x_min()) or (map.at(i).get_y_max() > map.at(j).get_y_min()) or (map.at(i).get_y_min() > map.at(j).get_y_max())){
-                cout << "Box  " << i+1 << " and Box " << j+1 << " intersect." << endl;
+	bool check = false;
+	for(size_t i = 1; i < boxes.size()-1; i++) {
+		for(size_t j = i+1; j < boxes.size(); j++) {
+			if(boxes.at(i).get_x_max() > boxes.at(j).get_x_min() and boxes.at(i).get_x_max() < boxes.at(j).get_x_max()) {
+				if(boxes.at(i).get_y_min() > boxes.at(j).get_y_min() and boxes.at(i).get_y_min() < boxes.at(j).get_y_max()) {
+					check = true;
+					cout << "Box " << i << " and Box " << j << " intersect." << endl;
+					continue;
+				}
 			}
-        }
-    }
-    if(check) cout << "No boxes overlapped!" << endl;
+			if(boxes.at(i).get_x_max() > boxes.at(j).get_x_min() and boxes.at(i).get_x_max() < boxes.at(j).get_x_max()) {
+				if(boxes.at(i).get_y_max() > boxes.at(j).get_y_min() and boxes.at(i).get_y_max() < boxes.at(j).get_y_max()) {
+					check = true;
+					cout << "Box " << i << " and Box " << j << " intersect." << endl;
+					continue;
+				}
+			}
+			if(boxes.at(i).get_x_min() > boxes.at(j).get_x_min() and boxes.at(i).get_x_min() < boxes.at(j).get_x_max()) {
+				if(boxes.at(i).get_y_min() > boxes.at(j).get_y_min() and boxes.at(i).get_y_min() < boxes.at(j).get_y_max()) {
+					check = true;
+					cout << "Box " << i << " and Box " << j << " intersect." << endl;
+					continue;
+				}
+			}
+			if(boxes.at(i).get_x_min() > boxes.at(j).get_x_min() and boxes.at(i).get_x_min() < boxes.at(j).get_x_max()) {
+				if(boxes.at(i).get_y_max() > boxes.at(j).get_y_min() and boxes.at(i).get_y_max() < boxes.at(j).get_y_max()) {
+					check = true;
+					cout << "Box " << i << " and Box " << j << " intersect." << endl;
+					continue;
+				}
+			}
+			//If the x is between but the maxy is greater and the miny is less
+			if(boxes.at(i).get_x_min() > boxes.at(j).get_x_min() and boxes.at(i).get_x_min() < boxes.at(j).get_x_max()) {
+				if(boxes.at(i).get_y_max() > boxes.at(j).get_y_max() and boxes.at(i).get_y_min() < boxes.at(j).get_y_min()) {
+					check = true;
+					cout << "Box " << i << " and Box " << j << " intersect." << endl;
+					continue;
+				}
+			}
+			//if the y is between but the max x is greater and min x is less
+			if(boxes.at(i).get_y_min() > boxes.at(j).get_y_min() and boxes.at(i).get_y_min() < boxes.at(j).get_y_max()) {
+				if(boxes.at(i).get_x_max() > boxes.at(j).get_x_max() and boxes.at(i).get_x_min() < boxes.at(j).get_x_min()) {
+					check = true;
+					cout << "Box " << i << " and Box " << j << " intersect." << endl;
+					continue;
+				}
+			}
+		}
+	}
+	if(!check) cout << "No boxes overlapped!" << endl;
 }
 
 void check_correctness(const vector<Rectangle> &boxes) {
