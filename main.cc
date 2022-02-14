@@ -1,3 +1,5 @@
+//Collins, Cromwell, Mitchell
+
 #include "/public/read.h"
 #include "ray.h"
 #include <vector>
