@@ -17,6 +17,7 @@ class Ray {
 		double get_y_loc() const;	
 		double get_slope() const;
 		int get_direction() const;
+		string get_vert() const;
 		void take_shot();
 		void take_all_shots(const vector<Rectangle> &boxes, const vector<Ray> &shots);
 		friend ostream& operator<<(ostream &outs, const Ray &shot);
